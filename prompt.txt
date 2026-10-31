@@ -1,0 +1,62 @@
+PacketSage is a Streamlit app where a network engineer uploads a small .pcap file and gets a plain-English explanation of what happened on the wire. The app parses the capture with scapy into per-flow summaries (endpoints, protocol, duration, bytes, TCP handshake status, retransmissions, resets, RTT estimates, DNS failures) and detects anomalies with deterministic rules. It sends only these compact summaries (never raw payloads) to Gemini, which narrates a timeline of events, ranks the likely root causes, and suggests next troubleshooting steps. The UI shows a flow table, a few Plotly charts, and the AI diagnosis. The key design principle is that the code computes facts and Gemini only explains them, which keeps the output accurate and the demo credible.
+
+Build a Streamlit app called "PacketSage" in Python 3.14. Work in a new folder
+and plan before coding. Show me the plan as an artifact first.
+
+GOAL
+User uploads a small .pcap/.pcapng file (up to ~20 MB). The app parses it,
+computes network facts deterministically, then asks Gemini to explain them.
+Gemini must NEVER receive raw packets or payloads, only the summary JSON.
+
+STRUCTURE
+- app.py            -> Streamlit UI only
+- parser.py         -> scapy parsing into flow summaries
+- detectors.py      -> rule-based anomaly detection
+- llm.py            -> Gemini call + prompt
+- tests/            -> pytest tests with small synthetic pcaps made by scapy
+- requirements.txt, README.md
+- data/		    -> Contains pcap file
+
+parser.py
+- Group packets into flows by 5-tuple (bidirectional).
+- Per flow: src/dst, ports, protocol, start time, duration, packets, bytes.
+- TCP: handshake complete?, SYN-without-SYNACK, RST count, FIN seen,
+  retransmission count (repeated seq numbers with payload), duplicate ACKs,
+  zero-window events, rough RTT from SYN to SYN-ACK.
+- DNS: queries, responses, NXDOMAIN/SERVFAIL, unanswered queries.
+- ICMP: type/code counts (unreachable, time exceeded).
+- Handle malformed packets without crashing.
+
+detectors.py
+- Return a list of findings: {severity, flow_id, type, evidence}.
+- Rules: high retransmission rate (>2%), SYN scan pattern (many SYNs to many
+  ports, no completion), connection resets, DNS failures, high RTT,
+  zero-window stalls, ICMP unreachables.
+
+llm.py
+- Use the google-genai SDK, API key from env var GEMINI_API_KEY.
+- Keep the model name in one config constant.
+- Send summary JSON (top 20 flows by bytes + all findings + capture stats).
+- Ask for structured JSON output: {timeline: [...], likely_causes: [{cause,
+  confidence, evidence}], next_steps: [...], plain_summary: "..."}.
+- System prompt: act as a senior network engineer, only cite evidence present
+  in the data, say "insufficient evidence" instead of guessing.
+- Handle API errors gracefully.
+
+app.py
+- Sidebar: file upload, "Analyze" button, sample-file dropdown.
+- Tabs: Overview (key stats cards), Flows (sortable table), Charts (Plotly:
+  traffic over time, top talkers, retransmissions per flow),
+  AI Diagnosis (plain summary, timeline, ranked causes with confidence, next steps).
+- Findings shown with colored severity badges.
+- Use st.cache_data so reruns are fast.
+
+TESTING
+- Write pytest tests using synthetic pcaps (clean handshake, retransmission
+  storm, SYN scan, DNS NXDOMAIN) and verify detectors flag the right things.
+- After the app runs, use the browser agent to upload a sample pcap, check
+  every tab renders without errors, and record the run.
+
+Run tests, fix failures, and give me the launch command when done.
+
+
