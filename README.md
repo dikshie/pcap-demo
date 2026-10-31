@@ -18,18 +18,18 @@ An AI-driven Site Reliability Engineering (SRE) agent that autonomously inspects
 
 ```mermaid
 flowchart LR
-    subgraph Local Machine [🔒 Secure Local Perimeter - Zero Payload Leakage]
-        PCAP["Incident Capture\nsamples/*.pcap"] --> Tools["agent_tools.py\n(Scapy Parser & TTL Tracker)"]
-        Tools -->|Compact Telemetry\nJSON (No Raw Payloads)| ADK["adk_investigator.py\n(Google ADK LlmAgent)"]
+    subgraph Local_Machine ["🔒 Secure Local Perimeter - Zero Payload Leakage"]
+        PCAP["Incident Capture<br/>samples/*.pcap"] --> Tools["agent_tools.py<br/>(Scapy Parser & TTL Tracker)"]
+        Tools -->|"Compact Telemetry JSON<br/>(No Raw Payloads)"| ADK["adk_investigator.py<br/>(Google ADK LlmAgent)"]
     end
 
-    subgraph Google Cloud [☁️ Gemini Intelligence]
-        ADK <-->|Multi-turn Tool Calling\n& Reasoning Loop| Gemini["gemini-3.8-flash"]
+    subgraph Google_Cloud ["☁️ Gemini Intelligence"]
+        ADK <-->|"Multi-turn Tool Calling<br/>& Reasoning Loop"| Gemini["gemini-3.8-flash"]
     end
 
-    subgraph Live Presentation [🖥️ Real-Time Observability]
-        ADK -->|Writes Artifact| Report["INCIDENT_REPORT.md\n(Root Cause + Mermaid + Fix)"]
-        Report -->|Watchdog Polling| Viewer["viewer.py\n(Streamlit Live Viewer)"]
+    subgraph Live_Presentation ["🖥️ Real-Time Observability"]
+        ADK -->|"Writes Artifact"| Report["INCIDENT_REPORT.md<br/>(Root Cause + Mermaid + Fix)"]
+        Report -->|"Watchdog Polling"| Viewer["viewer.py<br/>(Streamlit Live Viewer)"]
     end
 ```
 
