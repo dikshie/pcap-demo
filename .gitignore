@@ -1,11 +1,27 @@
+# PCAP data
 data/
 *.pcap
 *.pcap.gz
 !samples/
 !samples/*.pcap
+
+# Environment variables and API keys
 .env
+.env.*
+*.env
+!.env.example
+*.key
+*.pem
+*.pub
+secrets.*
+credentials.*
+
+# Local agent artifacts & state
 .agent_status
 .agents/
+.lock
+
+# Python virtual environment & cache
 __pycache__/
 *.py[cod]
 bin/
@@ -15,4 +31,3 @@ etc/
 share/
 pyvenv.cfg
 CACHEDIR.TAG
-.lock
